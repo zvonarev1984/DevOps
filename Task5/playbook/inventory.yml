@@ -1,0 +1,2 @@
+[db_instance]
+10.101.1.105 ansible_port=22 ansible_user=ansible ansible_ssh_pass=123 ansible_sudo_pass=123 ansible_python_interpreter=/bin/python3

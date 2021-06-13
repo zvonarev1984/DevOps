@@ -1,0 +1,20 @@
+- name: "install defaults packages OS Debian"
+  apt: 
+    name:
+      - iotop
+      - htop
+      - mc
+      - net-tools
+      - python3-psycopg2
+    autoremove: yes
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: "install defaults packages OS Redhat"
+  yum:
+    name:
+      - iotop
+      - htop
+      - mc
+      - net-tools
+    update_cache: yes
+  when: ansible_facts['distribution'] == "RedHat"

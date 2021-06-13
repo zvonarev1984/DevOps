@@ -1,0 +1,6 @@
+---
+- name: Set up db instance
+  hosts: db_instance
+  become: yes
+  roles:
+    - postgres-db
