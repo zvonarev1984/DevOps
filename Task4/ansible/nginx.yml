@@ -1,0 +1,75 @@
+- hosts: web
+  become: yes
+  tasks:
+  - name: "apt update"
+    apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: "install nginx"
+    apt:
+      name: ['nginx']
+      state: latest
+
+  - name: "create www directory"
+    file:
+      path: /var/www/{{ domain }}
+      state: directory
+      mode: '0775'
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+
+  - name: "delete default nginx site"
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    notify: restart nginx
+
+  - name: "copy nginx site.conf"
+    template:
+      src: site.conf.j2
+      dest: /etc/nginx/sites-enabled/{{ domain }}
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: "deploy website"
+    synchronize:
+      src: site/
+      dest: /var/www/{{ domain }}
+      archive: no
+      checksum: yes
+      recursive: yes
+      delete: yes
+    become: no
+
+  - name: "check config and restart nginx"
+    debug:
+      msg: "Task check config and restart config "
+    changed_when: true
+    notify:
+      - check config nginx
+      - restart nginx
+
+  handlers:
+  - name: check config nginx
+    command: nginx -t
+    register: nginx_test_result
+    changed_when: nginx_test_result.rc !=0
+
+  - name: "restart nginx"
+    systemd:
+      daemon_reload: true
+      name: nginx
+      state: restarted
+    register: restart_nginx_result
+    ignore_errors: true
+    notify: check status nginx
+
+  - name: "check status nginx"
+    fail:
+      msg: "Error start nginx:
+           {{ restart_nginx_result.StandardError }} 
+           {{ restart_nginx_result.StandardOutput }}"
+    when: restart_nginx_result.failed  
+
