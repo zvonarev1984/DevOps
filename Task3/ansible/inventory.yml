@@ -1,6 +1,6 @@
 web:
   hosts:
-    192.168.100.8
+    10.101.1.105
   vars:
     domain: test.local
     ansible_user: ansible
